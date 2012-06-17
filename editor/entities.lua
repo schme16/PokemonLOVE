@@ -1,12 +1,12 @@
-
+math.randomseed(love.timer.getDelta()*os.time()*10000)
+math.random(1)
+math.random(1)
+math.random(1)
 msgWindow = love.graphics.newImage(prefix..'msgWindow.png')
 msgWindow:setFilter('nearest','nearest')
 
 
 signs = {}
-signsTemplate = {
-	{X = 5, Y = 2, script = function(x,y,etc) if player.X == x and (player.Y-1) == y then signs:drawSelf(etc.text,etc.page ) end end , solid = true, onAdd = signs.addFunc},  --Signs
-}
 
 x =0
 local text = ""
@@ -105,6 +105,7 @@ function acceptedKey(t)
 		['\\'] = true,	
 		['|'] = true,	
 		['.'] = true,	
+		[':'] = true,
 	}
 	
 	if a[t] then return true else return false end
@@ -113,7 +114,6 @@ end
 	local text
 	local page 
 function signs:addFunc(start)
-print('1      1')
 	if start then
 		text = {""} 
 		page = 1 
@@ -121,9 +121,9 @@ print('1      1')
 	if not(text[page]) then text[page] = '' end
 	local len = love.graphics.getFont():getWidth(text[page])
 	if len > 1200 then page = page+1 end
-	if len == 0 and keyIndex[8] and page > 1 then page = page-1 end
+	if len == 0 and newPress[8] and page > 1 then page = page-1 end
 	if not(text[page]) then text[page] = '' end
-	if keyIndex['curKey'] == 13 then 
+	if newPress['curKey'] == 13 then 
 		map.objectScripts[currentFunc.X][currentFunc.Y] = {
 			script = currentFunc.ent.script,
 			imgX = currentFunc.ent.X,
@@ -135,11 +135,11 @@ print('1      1')
 		}
 		currentFunc = nil
 	else
-		if keyIndex['curKey'] then
-			if keyIndex[8] then 
+		if newPress['curKey'] then
+			if getControl(controls.delete) then 
 				text[page] = string.sub(text[page], 0,text[page]:len()-1)
-			elseif acceptedKey(string.char(keyIndex['curKey'])) then
-				text[page] = tostring(text[page])..string.char(keyIndex['curKey'])
+			elseif acceptedKey(string.char(newPress['curKey'])) then
+				text[page] = tostring(text[page])..string.char(newPress['curKey'])
 			end
 		end
 	
@@ -172,7 +172,7 @@ function signs:drawSelf(text, page, overrideDraw)
 end
 
 function signs:add(id, x, y)
-	local ent = signs[id]
+	local ent = signsTemplate[id]
 	currentFunc = {run = ent.onAdd, ent = ent,X=x,Y=y, id = id, firstRun = true}
 end
 
@@ -181,8 +181,8 @@ function signs:draw()
 		for y,d in pairs(v) do
 			local ent = signsTemplate[d.id]
 				ent.script(x-1,y-1,d.etc)
-
-			if ent then love.graphics.drawq(tileset, tiles[ent.X][ent.Y].quad, (tileSize*x)-tileSize,  (tileSize*y)-tileSize) end
+				
+			if ent and ent.visible then love.graphics.drawq(tileset, tiles[ent.X][ent.Y].quad, (tileSize*x)-tileSize,  (tileSize*y)-tileSize) end
 		end
 	end
 
@@ -201,28 +201,34 @@ function signs:addRun()
 end
 
 
+signsTemplate = {
+	{X = 5, Y = 2, script = function(x,y,etc) if player.X == x and (player.Y-1) == y then signs:drawSelf(etc.text,etc.page ) end end , solid = true, visible = true, onAdd = signs.addFunc},  --Signs
+	{X = 5, Y = 2, script = function(x,y,etc) if player.X == x and (player.Y-1) == y then signs:drawSelf(etc.text,etc.page ) end end , solid = true, visible = false, onAdd = signs.addFunc},  --Signs
+}
 
 entitiesList = {}
 entities = {}
 
 entityFuncs = {
 	wildEncounter = function()
-		if player.moving and map.wildPokemon then
-			local chance = 250
+	local pokeData
+		if  map.wildPokemon then
+			local chance = 10
 			local num = math.random(1,chance)
 			
 		
-			if num == math.ceil(chance/2) then
+			if num == 5 then
 				chance = #map.wildPokemon
 				num = math.random(1, chance)
 				if pokedex[num] then
-					pokeData = {name = pokedex[num].name,
-					front = love.graphics.newImage(prefix..'sprites/'..num..'.png'),
-					back = love.graphics.newImage(prefix..'sprites/back/'..num..'.png'),
-					}
+					pokeData = {pID = num, name = pokedex[num].name, level = math.random(1,10)}
 				end
 				
-				if pokeData then player.battling = pokeData end
+				if pokeData then player.battling = pokeData
+					--love.audio.stop()
+					--love.audio.rewind(sounds.wildBattle)
+					--love.audio.play(sounds.wildBattle)
+				end
 			end
 		end
 	end,
@@ -237,7 +243,7 @@ end
 
 entities.build()
 
-function entities.draw(map, pX, pY)
+function entities.runFuncs(map, pX, pY)
 pX, pY = pX+1, pY+1
 	if map[5][pX] then
 					--print(1111)

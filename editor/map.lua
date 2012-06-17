@@ -1,4 +1,6 @@
 mapFuncs = {}
+
+
 local layers = {
 	love.graphics.newSpriteBatch( love.graphics.newImage(prefix..'pkmnTiles.png'), 200000 ),
 	love.graphics.newSpriteBatch( love.graphics.newImage(prefix..'pkmnTiles.png'), 200000 ),
@@ -30,16 +32,30 @@ function mapFuncs.loadQuads(numTiles, tileSize)
 	return tiles,tileSet
 end
 
-function mapFuncs.loadMap(mapName)
+function mapFuncs.checkMap(mapName)
 	mapName = mapName..'.pkm'
+	if love.filesystem.exists(mapName) or  love.filesystem.exists(prefix..mapName) then
+		if love.filesystem.exists(prefix..mapName) then mapName = prefix..mapName end
+		return mapName, true
+	end
+	return false
+end
+
+function mapFuncs.newMap(mapName)
+	return {wildPokemon = {10,11,12,13,14,15}, {}, {}, {}, {}, {}, {}, script = {}, objectScripts = { {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},}, }
+end
+
+function mapFuncs.loadMap(mapName)
+	mapName = mapFuncs.checkMap(mapName)
 	
-	if love.filesystem.exists(mapName) then
+	if mapName then
 		local tempFile, bytes= love.filesystem.read(mapName)
 		local map = table.load(tempFile)
 		if not(map.wildPokemon) then map.wildPokemon = {1,2,3,4,5,6,7,8,9} end
 		if map then
 			player.load(map)
-			 mapFuncs.buildMap(map, layer)
+			mapFuncs.buildMap(map, layer)
+			--love.audio.play(sounds.palletTown) 
 			return map
 		else 
 			return false
@@ -93,19 +109,20 @@ function mapFuncs.draw(map, editor)
 	else
 		for i,v in ipairs(layers) do
 			if i == 2 then
+
+			end
+			if not(i == 5) then
+				love.graphics.draw(v,0,0)
+			end
+			if i == 2 then
+				signs:draw()
 				love.graphics.draw(layers[5])
 				if map.script.playerStart then
 					player.move() 
 					player.draw()
 					
-					entities.draw(map, player.getTile())
+					
 				end
-			end
-			if not(i == 5) then
-				love.graphics.draw(v)
-			end
-			if i == 2 then
-				signs:draw()
 			end
 		end
 		--print(love.timer.getFPS())

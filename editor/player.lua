@@ -2,7 +2,7 @@
 
 	local playerSprites = love.graphics.newImage(prefix..'playerIcon.png')
 	playerSprites:setFilter('nearest','nearest')
-
+	local battleStage = love.graphics.newImage(prefix..'gui/battleg.png')
 player = {
 	standing = {
 		down = love.graphics.newQuad( 0, 0, 17, 25, playerSprites:getWidth(), playerSprites:getHeight() ),
@@ -27,21 +27,21 @@ player = {
 		right =  love.graphics.newSpriteBatch( playerSprites, 10 ),
 	},
 	battling = false,
+	party = {
+			--{pID = 2, name = 'Phil', shiney = false, health = 100 } ,
+	}
 }
 
 
 function player.checkCollision(x,y)
-	if map[2][math.ceil(x)+1] and map[2][math.ceil(x)+1][math.ceil(y)+1] then
-		return true
-	elseif map.objectScripts[math.ceil(x)+1] and map.objectScripts[math.ceil(x)+1][math.ceil(y)+1] then
-
+	if map[2][math.ceil(x)+1] and map[2][math.ceil(x)+1][math.ceil(y)+1] or  (map.objectScripts[math.ceil(x)+1] and map.objectScripts[math.ceil(x)+1][math.ceil(y)+1])then
 		return true
 	end
 end
 
 function player.getSpeed()
 	
-	return 8*dt
+	return 4*dt
 end
 
 function player.getTile()
@@ -56,12 +56,12 @@ end
 function player.draw(editor)
 	if not (editor) then
 		if player.moving then
-			player.walking[player.facing]:draw(math.ceil(player.drawX), math.ceil(player.drawY))
+			player.walking[player.facing]:draw(math.ceil(player.drawX), math.ceil(player.drawY)-10)
 		else
-			love.graphics.drawq(playerSprites, player.standing[player.facing], math.ceil(player.drawX), math.ceil(player.drawY))	
+			love.graphics.drawq(playerSprites, player.standing[player.facing], math.ceil(player.drawX), math.ceil(player.drawY)-10)	
 		end
 	else
-		love.graphics.drawq(playerSprites, player.standing[player.facing], editor.X, editor.Y)	
+		love.graphics.drawq(playerSprites, player.standing[player.facing], editor.X, editor.Y-10)	
 	end
 end
 
@@ -77,6 +77,7 @@ function player.move()
 			player.run = 0
 			player.rise = 0
 			player.moving = false
+			entities.runFuncs(map, player.getTile())
 		end
 	end
 	player.drawX = player.drawX+player.run
@@ -85,7 +86,6 @@ function player.move()
 		if love.keyboard.isDown('w') or love.keyboard.isDown('up') then
 			player.facing = 'up'
 		elseif love.keyboard.isDown('a') or love.keyboard.isDown('left') then
-
 			player.facing = 'left'
 		elseif love.keyboard.isDown('s') or love.keyboard.isDown('down') then
 
@@ -121,9 +121,44 @@ function player.move()
 	end
 end
 
+function player.getFirstPartyPokemon() 
+	for i,v in ipairs(player.party) do
+		if v.health > 0 then
+			return v
+		end
+	end
+	return false
+end
+
 function player.battlingDraw()
-	if pokeData then 
-		love.graphics.draw(pokeData.front, 100,100)
+	if player.battling then 
+		--draw stage
+		love.graphics.draw(battleStage, 0, 0)
+		
+		--draw opponent
+		love.graphics.draw(pokedex[player.battling.pID].front, 560, 146)
+
+		if not player.battling.continue then
+			signs:drawSelf('A Wild '..player.battling.name..' Appeared!', 1,true)
+			--love.graphics.print(, (love.graphics.getWidth()/2)-100,( love.graphics.getHeight( )/2)-100)
+			if getControl(controls.accept) then player.battling.continue = true end
+		else
+			local playerPoke = player.getFirstPartyPokemon()
+				
+			if not(playerPoke) then
+				signs:drawSelf('You have no Pokemon to fight with\n\rPress `'..string.firstToUpper(controls.accept)..'` to flee...', 1,true)
+				if getControl(controls.accept) then 
+					player.battling = false  
+					player.battling = false
+					--love.audio.stop()
+					--love.audio.rewind(sounds.palletTown)			
+					--love.audio.play(sounds.palletTown)			
+				end
+			else
+				--draw player poke
+				love.graphics.draw(pokedex[playerPoke.pID].back, 80, 530)
+			end
+		end
 	end
 end
 
