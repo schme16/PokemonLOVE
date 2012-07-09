@@ -1,5 +1,6 @@
 love.filesystem.setIdentity('MapMaker')
 prefix = ''
+require('fonts')
 require('sound')
 require('TESound')
 require('tools')
@@ -13,10 +14,7 @@ require('entities')
 require('map')
 require('SaveTable')
 
-fonts = {}
-fonts[12] = love.graphics.newFont(11)
-fonts[30] = love.graphics.newFont(30)
-love.graphics.setFont(fonts[30])
+
 ended = true
 msgWindow = love.graphics.newImage('msgWindow.png')
 msgWindow:setFilter('nearest','nearest')
@@ -49,15 +47,17 @@ end
 function love.load()
 	tileSize = 16
 	numTiles = 50
-
+	
 	local mapCheck = mapFuncs.checkMap('map1')
 	if mapCheck then
 		tiles, tileset = mapFuncs.loadQuads(numTiles,tileSize)
 		map = mapFuncs.loadMap('map1')
 	else
-		map = mapFuncs.newMap()
+		map = false
 	end
-	dt = math.min(0.002, love.timer.getDelta()) 
+	dt = math.min(0.002, love.timer.getDelta()) 	
+
+	
 end
 
 function love.update()
@@ -262,7 +262,6 @@ end
 
 function love.draw()
 
-	
 	if map then
 		local X = love.mouse.getX()
 		local Y = love.mouse.getY()

@@ -221,10 +221,19 @@ entityFuncs = {
 				chance = #map.wildPokemon
 				num = math.random(1, chance)
 				if pokedex[num] then
-					pokeData = {pID = num, name = pokedex[num].name, level = math.random(1,10)}
+					local level = math.random(1,10)
+					local shiney = math.random(1,25000)
+					if shiney == 10000 then shiney = true print('SHINEY!!!') else shiney = false end
+					pokeData = getWildPokeStat(num, level, shiney)
 				end
 				
-				if pokeData then player.battling = pokeData
+				if pokeData then 
+					player.battling = pokeData
+					player.run = 0
+					player.rise = 0
+					player.moving = false
+					player.X = getTile(player.drawX)-1
+					player.Y = getTile(player.drawY)-1
 					--love.audio.stop()
 					--love.audio.rewind(sounds.wildBattle)
 					--love.audio.play(sounds.wildBattle)

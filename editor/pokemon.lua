@@ -15,3 +15,16 @@ pokedex = {
 	{name = "Kakuna", hp = 45, attack = 25, speed = 35, special = 25, front = love.graphics.newImage(prefix..'sprites/'.. 14 ..'.png'), back = love.graphics.newImage(prefix..'sprites/back/'.. 14 ..'.png')},
 	{name = "Beedrill", hp = 65, attack = 80, speed = 75, special = 45, front = love.graphics.newImage(prefix..'sprites/'.. 15 ..'.png'), back = love.graphics.newImage(prefix..'sprites/back/'.. 15 ..'.png')},
 }
+
+function getWildPokeStat(pID, level, shiney)
+	local tempPoke = pokedex[pID]
+	tempPoke.pID = pID
+	tempPoke.level = level
+	tempPoke.shiney = shiney
+	tempPoke.hp = tempPoke.hp+(1.5*level)
+	tempPoke.attack = tempPoke.attack+(1.5*level)
+	tempPoke.speed = tempPoke.speed+(1.5*level)
+	tempPoke.special = tempPoke.special+(1.5*level)
+	tempPoke.maxHP = tempPoke.hp
+	return tempPoke
+end

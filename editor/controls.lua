@@ -7,6 +7,7 @@ controls = {
 	cancel = ' ',
 	delete = 'backspace',
 }
+
 newPress = {}
 function getControl(key)
 	if key == 'enter' then

@@ -1,4 +1,5 @@
 prefix = 'editor/' 
+require('editor.fonts')
 
 require('editor.sound')
 require('editor.tools')
@@ -12,19 +13,6 @@ require('editor.entities')
 require('editor.map')
 require('editor.SaveTable')
 require('editor.errors')
-
-
---cam = Camera(vector(love.graphics.getWidth()/2, love.graphics.getHeight()/2),1.5) 
-
-
-
-fonts = {}
-fonts[12] = love.graphics.newFont(11)
-fonts[30] = love.graphics.newFont(30)
-love.graphics.setFont(fonts[30])
-
---fontImage = love.graphics.newImageFont("editor/font.png", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890")
-
 
 function love.load()
 	tileSize = 16
